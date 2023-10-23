@@ -1,2 +1,0 @@
-# linkalibr
-Lidar Inertial Calibration
