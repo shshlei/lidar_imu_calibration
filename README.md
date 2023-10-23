@@ -1,4 +1,4 @@
-# imu_lidar_calibration
+# lidar_imu_calibration
 ## Target-free Extrinsic Calibration of a 3D Lidar and an IMU
 
 ## Overview
