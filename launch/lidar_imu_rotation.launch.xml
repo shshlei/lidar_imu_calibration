@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <!-- bag topics -->
+  <arg name="imu_topic" default="/imu"/>
+  <arg name="lidar_topic" default="/velodyne_points"/>
+
+  <!-- bag parameters -->
+  <arg name="bag_path" default="/home/shshlei/lidar_imu_calib_ws/src/lidar_imu_calibration/bag/rosbag2_2023_10_24-12_04_30_0.db3"/>
+  <arg name="bag_start" default="0"/>
+  <arg name="bag_durr" default="-1"/>
+
+  <node pkg="lidar_imu_calibration" exec="lidar_imu_init_rotation_node" name="lidar_imu_init_rotation_node" output="screen">
+    <param name="imu_topic" value="$(var imu_topic)"/>
+    <param name="lidar_topic" value="$(var lidar_topic)"/>
+    <param name="bag_path" value="$(var bag_path)"/>
+    <param name="bag_start" value="$(var bag_start)"/>
+    <param name="bag_durr" value="$(var bag_durr)"/>
+
+    <!-- NDT Resolution -->
+    <param name="ndt_resolution" value="0.25"/>
+  </node>
+
+  <node pkg="lidar_imu_calibration" exec="lidar_imu_init_rotation_optimizer_node" name="lidar_imu_init_rotation_optimizer_node" output="screen">
+    <param name="max_frames" value="290" />
+    <param name="gyroscope_noise_density" value="0.00013108142177250273" />
+    <param name="accelerometer_noise_density" value="0.003075146601664115" />
+    <param name="calibration_result_filename" value="/home/shshlei/lidar_imu_calib_ws/src/lidar_imu_calibration/data/L_T_I_init.txt"/>
+  </node>
+</launch>

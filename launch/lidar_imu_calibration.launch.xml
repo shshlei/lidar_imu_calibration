@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<launch>
+  <node pkg="lidar_imu_calibration" exec="lidar_imu_calibration_node" name="lidar_imu_calibration_node" output="screen">
+    <!-- bag topics -->
+    <param name="imu_topic" value="/imu"/>
+    <param name="lidar_topic" value="/velodyne_points"/>
+
+    <!-- bag parameters -->
+    <param name="bag_path" value="/home/shshlei/lidar_imu_calib_ws/src/lidar_imu_calibration/rosbag2_2023_10_25-14_39_16/rosbag2_2023_10_25-14_39_16_0.db3"/>
+    <param name="bag_start" value="0"/>
+    <param name="bag_durr" value="-1"/>
+
+    <!-- NDT Resolution -->
+    <param name="ndt_resolution" value="0.25"/>
+
+    <!-- Undistortion flag-->
+    <param name="do_undistortion" value="true"/>
+
+    <!-- Estimator Parameters -->
+    <param name="use_fej" value="false"/>
+    <param name="use_imuavg" value="true"/>
+    <param name="use_rk4int" value="true"/>
+    <param name="calib_lidar_imu_dt" value="0.0"/>
+    <param name="calib_lidar_imu_timeoffset" value="false"/>
+    <param name="calib_lidar_imu_extrinsics"  value="true"/>
+    <param name="max_clones" value="2"/>
+
+    <!-- Filter Init Parameters -->
+    <param name="init_window_time" value="2.5"/> <!-- in second -->
+    <param name="init_imu_thresh" value="0.25"/> <!-- jerk threshold -->
+
+    <!-- Noise Parameters -->
+    <param name="accelerometer_noise_density" value="0.003075146601664115"/>
+    <param name="accelerometer_random_walk" value="0.00023564280559096592"/>
+    <param name="gyroscope_noise_density" value="0.00013108142177250273"/>
+    <param name="gyroscope_random_walk" value="1.9869768875891635e-07"/>
+
+    <!-- Updater Parameters -->
+    <!-- Chi2 Parameters -->
+    <param name="updater_chi2_multiplier" value="1"/>
+    <param name="updater_do_chi2_check" value="false"/>
+    <!-- Update Noise (sigma) Params -->
+    <param name="updater_rotation_noise_lidarimu" value="0.1"/>
+    <param name="updater_translation_noise_lidarimu" value="0.2"/>
+
+    <!-- State Initial Noise (sigma) Params -->
+    <param name="state_init_x_noise_lidarimu" value="0.5"/>
+    <param name="state_init_y_noise_lidarimu" value="0.5"/>
+    <param name="state_init_z_noise_lidarimu" value="0.5"/>
+    <param name="state_init_rx_noise_lidarimu" value="0.1"/>
+    <param name="state_init_ry_noise_lidarimu" value="0.1"/>
+    <param name="state_init_rz_noise_lidarimu" value="0.1"/>
+    <param name="state_init_timeoffset_noise_lidarimu" value="0.01"/>
+
+    <!-- Gravity -->
+    <param name="gravity" value="[0.0, 0.0, 9.81]"/>
+
+    <!-- params determining map size -->
+    <param name="limit_map_size" value="false"/>
+    <param name="no_of_scans_for_map" value="400"/>
+
+    <!-- params for downsampling clouds before mapping -->
+    <param name="downsample_for_mapping" value="false"/>
+
+    <!-- initial calibration file -->
+    <param name="init_lidar_inertial_calibration_result_filename" value="/home/shshlei/lidar_imu_calib_ws/src/lidar_imu_calibration/data/I_T_L_init.txt"/>
+    <!-- Write an output -->
+    <param name="lidar_inertial_calibration_result_filename" value="/home/shshlei/lidar_imu_calib_ws/src/lidar_imu_calibration/data/I_T_L_final.txt"/>
+
+    <!-- output filenames -->
+    <param name="lidar_odometry_trajectory_filename" value="/home/shshlei/lidar_imu_calib_ws/src/lidar_imu_calibration/data/lidar_odometry_trajectory.csv"/>
+    <param name="inertial_trajectory_filename" value="/home/shshlei/lidar_imu_calib_ws/src/lidar_imu_calibration/data/inertial_trajectory.csv"/>
+    <param name="inertial_bias_filename" value="/home/shshlei/lidar_imu_calib_ws/src/lidar_imu_calibration/data/inertial_bias.csv"/>
+    <param name="inertial_velocity_filename" value="/home/shshlei/lidar_imu_calib_ws/src/lidar_imu_calibration/data/inertial_velocity.csv"/>
+    <param name="lidar_inertial_calib_extrinsic_filename" value="/home/shshlei/lidar_imu_calib_ws/src/lidar_imu_calibration/data/lidar_inertial_calib_extrinsic.csv"/>
+    <param name="lidar_inertial_calib_dt_filename" value="/home/shshlei/lidar_imu_calib_ws/src/lidar_imu_calibration/data/lidar_inertial_calib_dt.csv"/>
+  </node>
+</launch>
