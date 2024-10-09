@@ -52,20 +52,40 @@ namespace lidar_imu_calibration
 inline void TPointCloud2VPointCloud(const TPointCloud::Ptr input_pc, VPointCloud::Ptr output_pc)
 {
   output_pc->header = input_pc->header;
-  output_pc->height = input_pc->height;
-  output_pc->width = input_pc->width;
   output_pc->is_dense = input_pc->is_dense;
-  output_pc->resize(output_pc->width * output_pc->height);
-  for (std::uint32_t h = 0; h < input_pc->height; h++) {
-    for (std::uint32_t w = 0; w < input_pc->width; w++) {
-      if (std::isnan(input_pc->at(w, h).x) || std::isnan(input_pc->at(w, h).y) || std::isnan(input_pc->at(w, h).z)) continue;
-      lidar_imu_calibration::VPoint point;
-      point.x = input_pc->at(w, h).x;
-      point.y = input_pc->at(w, h).y;
-      point.z = input_pc->at(w, h).z;
-      point.intensity = input_pc->at(w, h).intensity;
-      output_pc->at(w, h) = point;
+
+  if (input_pc->isOrganized()) {
+    output_pc->height = input_pc->height;
+    output_pc->width = input_pc->width;
+    output_pc->resize(output_pc->width * output_pc->height);
+    for (std::uint32_t h = 0; h < input_pc->height; h++) {
+      for (std::uint32_t w = 0; w < input_pc->width; w++) {
+        if (std::isnan(input_pc->at(w, h).x) || std::isnan(input_pc->at(w, h).y) || std::isnan(input_pc->at(w, h).z)) continue;
+        lidar_imu_calibration::VPoint point;
+        point.x = input_pc->at(w, h).x;
+        point.y = input_pc->at(w, h).y;
+        point.z = input_pc->at(w, h).z;
+        point.intensity = input_pc->at(w, h).intensity;
+        output_pc->at(w, h) = point;
+      }
     }
+  }
+  else {
+    output_pc->height = 1;
+    output_pc->width = input_pc->points.size();
+    output_pc->resize(output_pc->width * output_pc->height);
+    for (std::size_t i = 0; i < input_pc->points.size(); ++i) {
+      if (std::isnan(input_pc->points[i].x) || std::isnan(input_pc->points[i].y) || std::isnan(input_pc->points[i].z)) {
+        continue;
+      }
+
+      lidar_imu_calibration::VPoint point;
+      point.x = input_pc->points[i].x;
+      point.y = input_pc->points[i].y;
+      point.z = input_pc->points[i].z;
+      point.intensity = input_pc->points[i].intensity;
+      output_pc->points[i] = point;
+    } 
   }
 }
 

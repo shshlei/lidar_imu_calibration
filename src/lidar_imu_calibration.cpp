@@ -31,8 +31,8 @@ public:
     lidar_topic_ = declare_parameter("lidar_topic", "/lidar");
 
     bag_path_ = declare_parameter("bag_path", "");
-    bag_start_ = declare_parameter("bag_start", 0);
-    bag_durr_ = declare_parameter("bag_durr", -1);
+    bag_start_ = declare_parameter("bag_start", 0.0);
+    bag_durr_ = declare_parameter("bag_durr", -1.0);
 
     // Read Data
     reader_.open(bag_path_);
@@ -40,14 +40,14 @@ public:
     rcutils_time_point_value_t start = mdata.starting_time.time_since_epoch().count() + RCUTILS_S_TO_NS(bag_start_);
     reader_.seek(start);
     rcutils_time_point_value_t end = start;
-    if (bag_durr_ > 0) end = start + RCUTILS_S_TO_NS(bag_durr_);
+    if (bag_durr_ > 0.0) end = start + RCUTILS_S_TO_NS(bag_durr_);
 
     rclcpp::Time start_time = now();
     RCLCPP_INFO_STREAM(get_logger(), "Reading bag ...");
     while (reader_.has_next()) {
       rosbag2_storage::SerializedBagMessageSharedPtr msg = reader_.read_next();
       if (msg->topic_name != lidar_topic_ && msg->topic_name != imu_topic_) continue;
-      if (bag_durr_ > 0 && msg->time_stamp > end) break;
+      if (bag_durr_ > 0.0 && msg->time_stamp > end) break;
 
       rclcpp::SerializedMessage serialized_msg(*msg->serialized_data);
       if (msg->topic_name == lidar_topic_) {

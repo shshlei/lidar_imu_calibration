@@ -35,24 +35,24 @@ public:
 
     // Bag
     bag_path_ = declare_parameter("bag_path", "");
-    bag_start_ = declare_parameter("bag_start", 0);
-    bag_durr_ = declare_parameter("bag_durr", -1);
+    bag_start_ = declare_parameter("bag_start", 0.0);
+    bag_durr_ = declare_parameter("bag_durr", -1.0);
 
     // Read Data
     reader_.open(bag_path_);
     const rosbag2_storage::BagMetadata & mdata = reader_.get_metadata();
     rcutils_time_point_value_t start = mdata.starting_time.time_since_epoch().count();
-    if (bag_start_ > 0) start = start + RCUTILS_S_TO_NS(bag_start_);
+    if (bag_start_ > 0.0) start = start + RCUTILS_S_TO_NS(bag_start_);
     reader_.seek(start);
     rcutils_time_point_value_t end = start; 
-    if (bag_durr_ > 0) end = start + RCUTILS_S_TO_NS(bag_durr_);
+    if (bag_durr_ > 0.0) end = start + RCUTILS_S_TO_NS(bag_durr_);
 
     lidar_imu_calibration::msg::ImuPacket imupacket;
     lodom_ = std::make_shared<lidar_imu_calibration::LidarOdometry>(ndt_resolution_, "", true);
     while (reader_.has_next()) {
       rosbag2_storage::SerializedBagMessageSharedPtr msg = reader_.read_next();
       if (msg->topic_name != lidar_topic_ && msg->topic_name != imu_topic_) continue;
-      if (bag_durr_ > 0 && msg->time_stamp > end) break;
+      if (bag_durr_ > 0.0 && msg->time_stamp > end) break;
 
       rclcpp::SerializedMessage serialized_msg(*msg->serialized_data);
       if (msg->topic_name == lidar_topic_) {

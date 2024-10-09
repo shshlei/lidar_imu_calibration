@@ -123,16 +123,58 @@ void lidar_imu_calibration::CalibManager::do_undistortion(double timestamp, cons
   std::map<float, Eigen::Matrix<double, 13, 1> > stamped_poses;
 
   scan_out->header = scan_raw->header;
-  scan_out->height = scan_raw->height;
-  scan_out->width = scan_raw->width;
   scan_out->is_dense = scan_raw->is_dense;
-  scan_out->resize(scan_raw->width * scan_raw->height);
-  for (std::uint32_t h = 0; h < scan_raw->height; h++) {
-    for (std::uint32_t w = 0; w < scan_raw->width; w++) {
-      TPoint scan_point = scan_raw->at(w, h);
-      if (isnan(scan_point.x) || isnan(scan_point.y) || isnan(scan_point.z)) continue;
+  if (scan_raw->isOrganized()) {
+    scan_out->height = scan_raw->height;
+    scan_out->width = scan_raw->width;
+    scan_out->resize(scan_raw->width * scan_raw->height);
+    for (std::uint32_t h = 0; h < scan_raw->height; h++) {
+      for (std::uint32_t w = 0; w < scan_raw->width; w++) {
+        TPoint scan_point = scan_raw->at(w, h);
+        if (isnan(scan_point.x) || isnan(scan_point.y) || isnan(scan_point.z)) continue;
 
-      float point_timestamp = scan_raw->at(w, h).time;
+        float point_timestamp = scan_raw->at(w, h).time;
+        Eigen::Vector3d skewedPoint = Eigen::Vector3d(scan_point.x, scan_point.y, scan_point.z);
+
+        if (!point_timestamps.empty()) {
+          auto it = find(point_timestamps.begin(), point_timestamps.end(), point_timestamp);
+          if (it == point_timestamps.end()) {
+            /// New timestamp
+            point_timestamps.push_back(point_timestamp);
+            double pointCurrTimeStamp = timestamp + point_timestamp;
+            Eigen::Matrix<double, 13, 1> imu_state_plus;
+            propagator->fast_state_propagate(state, pointCurrTimeStamp, imu_state_plus);
+            stamped_poses.insert(std::make_pair(point_timestamp, imu_state_plus));
+          }
+        }
+        else {
+          /// This is the first point
+          point_timestamps.push_back(point_timestamp);
+          pointStartTimeStamp = timestamp + point_timestamp;
+          propagator->fast_state_propagate(state, pointStartTimeStamp, imu_state_start);
+          stamped_poses.insert(std::make_pair(point_timestamp, imu_state_start));
+        }
+        Eigen::Matrix<double, 13, 1> imu_state_plus = stamped_poses.find(point_timestamp)->second;
+        Eigen::Vector3d deskewedPoint = deskewPoint(imu_state_start, imu_state_plus, skewedPoint, I_R_L, I_t_L);
+        TPoint deskewed_scan_point;
+        deskewed_scan_point.x = deskewedPoint.x();
+        deskewed_scan_point.y = deskewedPoint.y();
+        deskewed_scan_point.z = deskewedPoint.z();
+        deskewed_scan_point.intensity = scan_point.intensity;
+        deskewed_scan_point.ring = scan_point.ring;
+        scan_out->at(w, h) = deskewed_scan_point;
+      }
+    }
+  }
+  else {
+    scan_out->height = 1;
+    scan_out->width = scan_raw->points.size();
+    scan_out->resize(scan_out->width);
+    for (std::size_t i = 0; i < scan_raw->points.size(); ++i) {
+      const TPoint& scan_point = scan_raw->points[i];
+      if (std::isnan(scan_point.x) || std::isnan(scan_point.y) || std::isnan(scan_point.z)) continue;
+
+      float point_timestamp = scan_point.time;
       Eigen::Vector3d skewedPoint = Eigen::Vector3d(scan_point.x, scan_point.y, scan_point.z);
 
       if (!point_timestamps.empty()) {
@@ -161,7 +203,7 @@ void lidar_imu_calibration::CalibManager::do_undistortion(double timestamp, cons
       deskewed_scan_point.z = deskewedPoint.z();
       deskewed_scan_point.intensity = scan_point.intensity;
       deskewed_scan_point.ring = scan_point.ring;
-      scan_out->at(w, h) = deskewed_scan_point;
+      scan_out->points[i] = deskewed_scan_point;
     }
   }
 
